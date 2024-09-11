@@ -7,7 +7,7 @@ version: 1.15.4+54
 
 environment:
   flutter: ">=3.13.0"
-  sdk: ">=3.4.0 <4.0.0"
+  sdk: ">=3.1.0 <4.0.0"
 
 dependencies:
   app_group_directory: 2.0.0
@@ -44,7 +44,7 @@ dependencies:
   open_filex: 4.4.0
   package_info_plus: 4.2.0
   pasteboard: ^0.2.0
-  path: 1.9.0
+  path: 1.8.3
   path_provider: 2.1.2
   permission_handler: 11.0.1
   pretty_qr_code: 3.3.0
@@ -64,9 +64,9 @@ dependencies:
   tray_manager: 0.2.3
   uri_content: 2.2.0
   url_launcher: 6.2.4
-  uuid: 4.5.0
+  uuid: 3.0.7
   wakelock_plus: 1.1.4
-  wechat_assets_picker: 9.2.1
+  wechat_assets_picker: 8.8.1+1
   win32_registry: 1.1.2
   window_manager: 0.3.9
   windows_taskbar: 1.1.2
@@ -88,7 +88,7 @@ dependency_overrides:
     # This is temporary workaround, wait upstream for update
     git:
       url: https://github.com/Seidko/flutter-plugins.git
-      ref: 58748dae405df5e68a131e4905d48e75d0624be2
+      ref: bca6d5a0a31befe40d6d749a68906242187120b2
       path: packages/pasteboard
   permission_handler_windows:
     # Remove windows support as it causes trouble with Windows 7
