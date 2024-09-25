@@ -1,6 +1,13 @@
 import Cocoa
 import FlutterMacOS
 import Defaults
+import DockProgress
+
+enum DockIcon: CaseIterable {
+    case regular
+    case error
+    case success
+}
 
 @main
 class AppDelegate: FlutterAppDelegate {
@@ -8,7 +15,6 @@ class AppDelegate: FlutterAppDelegate {
     private var channel: FlutterMethodChannel?
     private var pendingFilesObservation: Defaults.Observation?
     private var pendingStringsObservation: Defaults.Observation?
-    private var methodChannelInitialized = false
     
     override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         // LocalSend handles the close event manually
@@ -20,26 +26,37 @@ class AppDelegate: FlutterAppDelegate {
         channel = FlutterMethodChannel(name: "main-delegate-channel", binaryMessenger: controller.engine.binaryMessenger)
         channel?.setMethodCallHandler(handleFlutterCall)
         
-        self.setupPendingItemsObservation()
-        
         self.setupDockIconTextDropEventListener()
+        
+        let localsendBrandColor = NSColor(red: 0, green: 0.392, blue: 0.353, alpha: 0.8) // #00645a
+        DockProgress.style = .squircle(color: localsendBrandColor)
+    }
+    
+    override func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showLocalSendFromMenuBar()
+        return false
     }
     
     private func setupPendingItemsObservation() {
         self.pendingFilesObservation = Defaults.observe(.pendingFiles) { change in
             guard !Defaults[.pendingFiles].isEmpty else { return }
-
-            if self.methodChannelInitialized {
-                self.sendPendingItemsToFlutter()
-            }
+            self.sendPendingItemsToFlutter()
         }
         
         self.pendingStringsObservation = Defaults.observe(.pendingStrings) { change in
             guard !Defaults[.pendingStrings].isEmpty else { return }
-
-            if self.methodChannelInitialized {
-                self.sendPendingItemsToFlutter()
-            }
+            self.sendPendingItemsToFlutter()
+        }
+    }
+    
+    private func setDockIcon(icon: DockIcon) {
+        switch icon {
+        case .regular:
+            NSApplication.shared.applicationIconImage = NSImage(named: NSImage.applicationIconName)
+        case .error:
+            NSApplication.shared.applicationIconImage = NSImage(named: "AppIconWithErrorMark")!
+        case .success:
+            NSApplication.shared.applicationIconImage = NSImage(named: "AppIconWithSuccessMark")!
         }
     }
     
@@ -115,23 +132,29 @@ class AppDelegate: FlutterAppDelegate {
         
         Defaults[.pendingFiles] = []
         Defaults[.pendingStrings] = []
-
+        
         self.showLocalSendFromMenuBar()
     }
     
     // START: handle opened files
-    private func handleFlutterCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    @MainActor private func handleFlutterCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "methodChannelInitialized":
-            methodChannelInitialized = true
-            if !Defaults[.pendingFiles].isEmpty || !Defaults[.pendingStrings].isEmpty {
-                sendPendingItemsToFlutter()
-            }
+            /// Any call to the channel is dropped until methodChannelInitialized is called from Flutter
+            setupPendingItemsObservation()
             result(nil)
         case "setupStatusBar":
             let i18n = call.arguments as! [String: String]
             setupStatusBarItem(i18n: i18n)
             result(nil)
+        case "updateDockProgress":
+            let progress = call.arguments as! Double
+            DockProgress.progress = progress
+            result(nil)
+        case "setDockIcon":
+            let newIconIndex = call.arguments as! Int
+            let newIcon = DockIcon.allCases[newIconIndex]
+            setDockIcon(icon: newIcon)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -158,7 +181,7 @@ class AppDelegate: FlutterAppDelegate {
     }
     // END: handle opened files
     
-    /// Handle **text** droped onto the Dock icon
+    /// Handle **text** dropped onto the Dock icon
     @objc func handleOpenContentsEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
         if let string = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
             Defaults[.pendingStrings].append(string)
