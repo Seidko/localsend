@@ -451,6 +451,27 @@ class MockPersistenceService extends _i1.Mock implements _i3.PersistenceService 
       ) as _i4.Future<void>);
 
   @override
+  bool isCopyToPasteboard() => (super.noSuchMethod(
+        Invocation.method(
+          #isCopyToPasteboard,
+          [],
+        ),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i4.Future<void> setCopyToPasteboard(bool? copyToPasteboard) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setCopyToPasteboard,
+          [copyToPasteboard],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   bool isMinimizeToTray() => (super.noSuchMethod(
         Invocation.method(
           #isMinimizeToTray,

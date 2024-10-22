@@ -91,6 +91,42 @@ class ReceiveOptionsPage extends StatelessWidget {
                 ),
               ],
             ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              Text(t.receiveOptionsPage.saveToGallery, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  CustomDropdownButton<bool>(
+                    value: receiveSession.saveToGallery,
+                    expanded: false,
+                    items: [false, true].map((b) {
+                      return DropdownMenuItem(
+                        value: b,
+                        alignment: Alignment.center,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: 80),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(b ? t.general.on : t.general.off),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (b) => ref.notifier(serverProvider).setSessionSaveToGallery(b),
+                  ),
+                  if (receiveSession.containsDirectories && !receiveSession.saveToGallery) ...[
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(t.receiveOptionsPage.saveToGalleryOff, style: const TextStyle(color: Colors.grey)),
+                    ),
+                  ]
+                ],
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
           Row(
             children: [
